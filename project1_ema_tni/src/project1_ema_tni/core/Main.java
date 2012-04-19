@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package project1_ema_tni;
+package project1_ema_tni.core;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import project1_ema_tni.business.Entropy;
 
 /**
  *
@@ -23,9 +25,7 @@ public class Main
 
     private static String filePath = "";
     private static String fileName = "exemple1.txt";
-    /**
-     * @param args the command line arguments
-     */
+
     public static void main(String[] args)
     {
         String text = "comment ca va, petit test entropie";

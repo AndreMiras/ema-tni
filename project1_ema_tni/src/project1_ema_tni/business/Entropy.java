@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package project1_ema_tni;
+package project1_ema_tni.business;
 
 import java.util.HashMap;
 
