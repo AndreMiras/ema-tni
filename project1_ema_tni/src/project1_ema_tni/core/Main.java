@@ -4,7 +4,6 @@
  */
 package project1_ema_tni.core;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
