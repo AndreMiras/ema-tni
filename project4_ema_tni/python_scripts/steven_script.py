@@ -1,13 +1,24 @@
 #!/usr/bin/env python2
 import math
+import codecs
+import optparse
 import operator
 from decimal import Decimal
-import codecs
+
+
+file_name = ""
+
+if __name__=="__main__":
+    parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
+    parser.add_option("-f", "--filename", dest="filename",
+                      default="exemple1.txt", type="string",
+                      help="file name to parse")
+
+    (options, args) = parser.parse_args()
+    file_name = options.filename
 
 # trouver l'entropie (nombre de bits par symboles)
 
-file_name = "/home/andre/Progz/ema-tni/project4_ema_tni/exemple1.txt"
-# file_name = "/Users/Steven/Documents/EMA/TNI/exemple1.txt"
 # selected_encoding = "utf-8"
 selected_encoding="iso-8859-1"
 f = codecs.open(file_name, "r", encoding=selected_encoding)
