@@ -1,21 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import math
 import operator
 from decimal import Decimal
+import codecs
 
 # trouver l'entropie (nombre de bits par symboles)
 
-# file_name = "/etc/passwd"
-# file_name = "/home/andre/Downloads/exemple1.txt"
-file_name = "/Users/Steven/Documents/EMA/TNI/exemple1.txt"
-f = open(file_name)
+file_name = "/home/andre/Progz/ema-tni/project4_ema_tni/exemple1.txt"
+# file_name = "/Users/Steven/Documents/EMA/TNI/exemple1.txt"
+# selected_encoding = "utf-8"
+selected_encoding="iso-8859-1"
+f = codecs.open(file_name, "r", encoding=selected_encoding)
 char_count = 0
 
 alphabet = {}
 char = str(f.read(1)) # .lower()
 while char:
     char2 = f.read(1)
-    chaine = str(char) + str(char2) 
+    chaine = char + char2
     if chaine not in alphabet:
         alphabet.update({chaine:0})
     alphabet[chaine] += 1
