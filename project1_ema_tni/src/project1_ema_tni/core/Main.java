@@ -27,7 +27,7 @@ public class Main
 
     public static void main(String[] args)
     {
-        String text = "comment ca va, petit test entropie";
+        String text;
         String fullPath = filePath + fileName;
         try
         {
@@ -39,6 +39,7 @@ public class Main
         }
         Entropy entropyObj = new Entropy(text);
 
+        System.out.println("\nChar Count:" + text.length());
         System.out.println("\nCount:");
         HashMap<Character, Integer> alphabetCountDict =
                 entropyObj.getAlphabetCountDict();
