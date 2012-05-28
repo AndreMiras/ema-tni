@@ -6,19 +6,8 @@ import operator
 from decimal import Decimal
 
 
+# globals
 file_name = ""
-
-if __name__=="__main__":
-    parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
-    parser.add_option("-f", "--filename", dest="filename",
-                      default="exemple1.txt", type="string",
-                      help="file name to parse")
-
-    (options, args) = parser.parse_args()
-    file_name = options.filename
-
-# trouver l'entropie (nombre de bits par symboles)
-
 # selected_encoding = "utf-8"
 selected_encoding="iso-8859-1"
 
@@ -60,13 +49,22 @@ def n_gram(n_gram_size):
     for lettre in sorted_alphabet:
         print(str(lettre))
 
+def run(n_gram_max_size):
+    for i in range(2, n_gram_max_size+1):
+        n_gram(i)
 
-n_gram(2)
+if __name__=="__main__":
+    parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
+    parser.add_option("-f", "--filename", dest="filename",
+                      default="exemple1.txt", type="string",
+                      help="file name to parse")
+    parser.add_option("-n", "--ngram", dest="n_gram_max_size",
+                      default="4", type="int",
+                      help="passing n-gram max size as param")
 
-    # prob trigrammes
-print("=================================TRIGRAMMES=================================")
-n_gram(3)
+    (options, args) = parser.parse_args()
+    file_name = options.filename
+    n_gram_max_size = options.n_gram_max_size
 
-# prob quadrigrammes
-print("=================================QUADRIGRAMMES=================================")
-n_gram(4)
+    run(n_gram_max_size)
+
