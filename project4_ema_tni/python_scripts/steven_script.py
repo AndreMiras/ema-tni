@@ -7,11 +7,10 @@ from decimal import Decimal
 
 
 # globals
-file_name = ""
 # selected_encoding = "utf-8"
 selected_encoding="iso-8859-1"
 
-def n_gram(n_gram_size):
+def n_gram(n_gram_size, file_name):
     # prob n-gram
     print("=================================" + str(n_gram_size) + "-grammes=================================")
     # f = open(file_name)
@@ -49,9 +48,9 @@ def n_gram(n_gram_size):
     for lettre in sorted_alphabet:
         print(str(lettre))
 
-def run(n_gram_max_size):
+def run(n_gram_max_size, file_name):
     for i in range(2, n_gram_max_size+1):
-        n_gram(i)
+        n_gram(i, file_name)
 
 if __name__=="__main__":
     parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
@@ -66,5 +65,5 @@ if __name__=="__main__":
     file_name = options.filename
     n_gram_max_size = options.n_gram_max_size
 
-    run(n_gram_max_size)
+    run(n_gram_max_size, file_name)
 
