@@ -5,19 +5,108 @@
 
 package project4_ema_tni;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author andre
  */
 public class Main
 {
+    private static String filePath = "";
+    private static String fileName = "exemple1.txt";
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args)
     {
-        // TODO code application logic here
+        String text;
+        String fullPath = filePath + fileName;
+        try
+        {
+            text = readFile(fullPath);
+        } catch (IOException ex)
+        {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+        LzDictionary lzDictionary = new LzDictionary(text);
+
+        System.out.println("\nChar Count: " + text.length());
+        /*
+        System.out.println("\nCount:");
+        HashMap<String, Integer> alphabetCountDict =
+                lzDictionary.getNGramCountDict();
+        printKeysValuesDict(alphabetCountDict);
+         */
+
+        System.out.println("\nSorted Count:");
+        SortedSet<Map.Entry<String, Integer>> nGramSortedCountDict =
+                lzDictionary.getNGramCountDictSorted();
+        printKeysValuesDict(nGramSortedCountDict);
+        /*
+        System.out.println("\nProba:");
+        HashMap<Character, Float> alphabetProbaDict =
+                entropyObj.getAlphabetProbaDict();
+        printKeysValuesDict(alphabetProbaDict);
+
+        System.out.println("\nEntropy:");
+        float textEntropy = entropyObj.getTextEntropy();
+        System.out.println(textEntropy);
+         */
     }
 
+
+    private static <K,V> void printKeysValuesDict(
+            HashMap<K, V> alphabetCountDict)
+    {
+        V value;
+        for(K key : alphabetCountDict.keySet())
+        {
+            value = alphabetCountDict.get(key);
+            System.out.println(key + ": " + value);
+        }
+    }
+
+    private static <K,V> void printKeysValuesDict(
+            SortedSet<Map.Entry<K, V>> nGramCountDict)
+    {
+        Map.Entry<K, V> mapEntry;
+        Iterator it = nGramCountDict.iterator();
+        while (it.hasNext())
+        {
+            mapEntry = (Map.Entry<K, V>)it.next();
+            System.out.println(mapEntry.getKey() + ": " + mapEntry.getValue());
+        }
+    }
+
+    private static String readFile(String path) throws IOException
+    {
+        FileInputStream stream = new FileInputStream(new File(path));
+        try
+        {
+            FileChannel fc = stream.getChannel();
+            MappedByteBuffer bb = fc.map(
+                    FileChannel.MapMode.READ_ONLY, 0, fc.size());
+            /* Instead of using default, pass in a decoder. */
+            // return Charset.defaultCharset().decode(bb).toString();
+            // return Charset.forName("utf-8").decode(bb).toString();
+            return Charset.forName("ISO-8859-1").decode(bb).toString();
+        } finally
+        {
+            stream.close();
+        }
+    }
 }
