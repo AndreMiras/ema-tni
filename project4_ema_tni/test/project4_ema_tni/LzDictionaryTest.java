@@ -7,6 +7,7 @@ package project4_ema_tni;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,18 +91,34 @@ public class LzDictionaryTest
     }
 
     /**
+     * Testing few known trigrams
+     */
+    @Test
+    public void testTriGrams()
+    {
+        System.out.println("Testing few digrams");
+        LzDictionary lzDictionary = new LzDictionary(text, 3);
+
+        HashMap<String, Integer> alphabetCountDict =
+                lzDictionary.getNGramCountDict();
+
+        // the trigram "foo" doesn't exist, will "bar" is seen 4 times
+        assertFalse(alphabetCountDict.containsKey("foo"));
+        assertEquals(1, alphabetCountDict.get("bar").intValue());
+    }
+
+    /**
      * Test of getNGramCountDictSorted method, of class LzDictionary.
+     * TODO: we should really test further
      */
     @Test
     public void testGetNGramCountDictSorted()
     {
         System.out.println("getNGramCountDictSorted");
-        LzDictionary instance = null;
-        NavigableSet expResult = null;
-        NavigableSet result = instance.getNGramCountDictSorted();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        LzDictionary lzDictionary = new LzDictionary(text, 2);
+        // NavigableSet expResult = null;
+        NavigableSet<Map.Entry<String, Integer>> result = lzDictionary.getNGramCountDictSorted();
+        assertEquals(551, result.size());
     }
 
     /**
@@ -111,12 +128,21 @@ public class LzDictionaryTest
     public void testGetNGramArraySortedByCount()
     {
         System.out.println("getNGramArraySortedByCount");
-        LzDictionary instance = null;
-        ArrayList expResult = null;
-        ArrayList result = instance.getNGramArraySortedByCount();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        LzDictionary instance = new LzDictionary(text, 2);
+        ArrayList<String> expResult = null;
+        ArrayList<String> result = instance.getNGramArraySortedByCount();
+
+        // these are the first digrams
+        assertEquals("e ", result.get(0));
+        assertEquals("s ", result.get(1));
+        assertEquals("es", result.get(2));
+        assertEquals("t ", result.get(3));
+
+        // these are the last digrams
+        assertEquals("Di", result.get(547));
+        assertEquals("\u0089t", result.get(548));
+        assertEquals("fs", result.get(549));
+        assertEquals("dÂ", result.get(550));
     }
 
     /**
