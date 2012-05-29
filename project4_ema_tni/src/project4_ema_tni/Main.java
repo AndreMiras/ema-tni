@@ -36,7 +36,7 @@ public class Main
         String fullPath = filePath + fileName;
         try
         {
-            text = readFile(fullPath);
+            text = Helper.readFile(fullPath);
         } catch (IOException ex)
         {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
@@ -55,7 +55,7 @@ public class Main
         System.out.println("\nSorted Count:");
         SortedSet<Map.Entry<String, Integer>> nGramSortedCountDict =
                 lzDictionary.getNGramCountDictSorted();
-        printKeysValuesDict(nGramSortedCountDict);
+        Helper.printKeysValuesDict(nGramSortedCountDict);
         /*
         System.out.println("\nProba:");
         HashMap<Character, Float> alphabetProbaDict =
@@ -67,47 +67,5 @@ public class Main
         System.out.println(textEntropy);
          */
         LzEncoder lzEncoder = new LzEncoder(text);
-    }
-
-
-    private static <K,V> void printKeysValuesDict(
-            HashMap<K, V> alphabetCountDict)
-    {
-        V value;
-        for(K key : alphabetCountDict.keySet())
-        {
-            value = alphabetCountDict.get(key);
-            System.out.println(key + ": " + value);
-        }
-    }
-
-    private static <K,V> void printKeysValuesDict(
-            SortedSet<Map.Entry<K, V>> nGramCountDict)
-    {
-        Map.Entry<K, V> mapEntry;
-        Iterator it = nGramCountDict.iterator();
-        while (it.hasNext())
-        {
-            mapEntry = (Map.Entry<K, V>)it.next();
-            System.out.println(mapEntry.getKey() + ": " + mapEntry.getValue());
-        }
-    }
-
-    private static String readFile(String path) throws IOException
-    {
-        FileInputStream stream = new FileInputStream(new File(path));
-        try
-        {
-            FileChannel fc = stream.getChannel();
-            MappedByteBuffer bb = fc.map(
-                    FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            /* Instead of using default, pass in a decoder. */
-            // return Charset.defaultCharset().decode(bb).toString();
-            // return Charset.forName("utf-8").decode(bb).toString();
-            return Charset.forName("ISO-8859-1").decode(bb).toString();
-        } finally
-        {
-            stream.close();
-        }
-    }
+    }    
 }
