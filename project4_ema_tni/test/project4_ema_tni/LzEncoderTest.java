@@ -4,7 +4,10 @@
  */
 package project4_ema_tni;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -14,9 +17,21 @@ import static org.junit.Assert.*;
  */
 public class LzEncoderTest
 {
-    
+    private static String filePath = "";
+    private static String fileName = "exemple1.txt";
+    private static String text;
+
     public LzEncoderTest()
     {
+        String fullPath = filePath + fileName;
+        try
+        {
+            text = Helper.readFile(fullPath);
+        } catch (IOException ex)
+        {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            text = "";
+        }
     }
 
     @BeforeClass
@@ -41,17 +56,27 @@ public class LzEncoderTest
 
     /**
      * Test of getEncodedCharMap method, of class LzEncoder.
+     * TODO: code comments
      */
     @Test
     public void testGetEncodedCharMap()
     {
         System.out.println("getEncodedCharMap");
-        LzEncoder instance = null;
+        LzEncoder lzEncoder = new LzEncoder(text);;
         ArrayList expResult = null;
-        ArrayList result = instance.getEncodedCharMap();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        ArrayList result = lzEncoder.getEncodedCharMap();
+
+        assertEquals(255, result.size());
+        assertEquals(" ", result.get(0));
+        assertEquals("e", result.get(1));
+        assertEquals("s", result.get(2));
+        assertEquals("n", result.get(3));
+        assertEquals("a", result.get(4));
+
+        
+        assertEquals("ev", result.get(252));
+        assertEquals("sp", result.get(253));
+        assertEquals("va", result.get(254));
     }
 
     /**
