@@ -66,6 +66,7 @@ public class Main
         float textEntropy = entropyObj.getTextEntropy();
         System.out.println(textEntropy);
          */
+        LzEncoder lzEncoder = new LzEncoder(text);
     }
 
 
