@@ -82,15 +82,33 @@ public class LzDictionary
         return nGramCountDict;
     }
 
-    public SortedSet<Map.Entry<String, Integer>> getNGramCountDictSorted()
+    public NavigableSet<Map.Entry<String, Integer>> getNGramCountDictSorted()
     {
         return entriesSortedByValues(getNGramCountDict());
     }
 
-    static <K, V extends Comparable<? super V>>
-            SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map)
+    public ArrayList<String> getNGramArraySortedByCount()
     {
-        SortedSet<Map.Entry<K, V>> sortedEntries = new TreeSet<Map.Entry<K, V>>(
+        ArrayList<String> nGramArraySortedByCount = new ArrayList<String>();
+        NavigableSet<Map.Entry<String, Integer>> nGramCountDictSorted =
+                getNGramCountDictSorted();
+        // Iterator iterator = nGramCountDictSorted.iterator();
+        Iterator<Map.Entry<String, Integer>> iterator = nGramCountDictSorted.descendingIterator();
+        String key;
+        //Ascending order list
+        while (iterator.hasNext())
+        {
+            key = iterator.next().getKey();
+            nGramArraySortedByCount.add(key);
+        }
+
+        return nGramArraySortedByCount;
+    }
+
+    static <K, V extends Comparable<? super V>>
+            NavigableSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map)
+    {
+        NavigableSet<Map.Entry<K, V>> sortedEntries = new TreeSet<Map.Entry<K, V>>(
                 new Comparator<Map.Entry<K, V>>()
                 {
 
