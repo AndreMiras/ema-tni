@@ -28,31 +28,37 @@ def decoding_text(encoded_char_map, ngram_max_size, output_file, decoded_file):
 def encoding_text(encoded_char_map, file_name, ngram_max_size, output_file):
     f = codecs.open(file_name, "r", encoding=selected_encoding)
     f2 = codecs.open(output_file, "w", encoding=selected_encoding)
-    char_control = f.read(ngram_max_size)
+    full_file = f.read()
+    f.close()
+    char_count = 0
+    # char_control = f.read(ngram_max_size)
+    char_control = full_file[char_count:ngram_max_size+char_count]
     while char_control:
-        compteur = 0
         if char_control in encoded_char_map:
             tampon = encoded_char_map.index(char_control)
             encoding_tampon = unichr(tampon)
             f2.write(encoding_tampon)
-            char_control = f.read(ngram_max_size)
+            char_count += ngram_max_size
+            char_control = full_file[char_count:ngram_max_size+char_count]
         else:
-             while compteur < ngram_max_size:
-                 compteur += 1
-                 tmp_char = char_control[:compteur]
-                 if tmp_char in encoded_char_map:
-                     tampon = encoded_char_map.index(tmp_char)
-                     encoding_tampon = unichr(tampon)
-                     f2.write(encoding_tampon)
-                     char_control = char_control[compteur:] + f.read(compteur)
-                     compteur = ngram_max_size
-                 else:
-                     char_control = char_control[compteur:] + f.read(ngram_max_size-compteur)
-                     compteur = ngram_max_size
-    f.close()
+             compter = ngram_max_size
+             tmp_char = char_control
+             while not (tmp_char in encoded_char_map):
+                 tmp_char = char_control[:compter]
+                 compter -= 1
+             tampon = encoded_char_map.index(tmp_char)
+             encoding_tampon = unichr(tampon)
+             f2.write(encoding_tampon) # FIXME
+             char_count += len(tmp_char)
+             char_control = full_file[char_count:char_count+ngram_max_size]
+
     f2.close()
 
 def create_encoded_char_map(uniq_char_list, n_gram_to_encode):
+    """
+    (u'e qu', {'occurrences': 17, 'weigth': 68})
+    but should be occurrences 51
+    """
     encoded_char_map = []
     for couple in uniq_char_list:
         char = couple[0]
@@ -65,7 +71,6 @@ def create_encoded_char_map(uniq_char_list, n_gram_to_encode):
         couple = n_gram_to_encode[count]
         char = couple[0]
         count += 1
-    import pdb; pdb.set_trace()
     return encoded_char_map
 
 def n_gram(n_gram_size, file_name):
@@ -82,18 +87,17 @@ def n_gram(n_gram_size, file_name):
     """
     # prob n-gram
     print("=================================" + str(n_gram_size) + "-grammes=================================")
-    # f = open(file_name)
-    f = codecs.open(file_name, "r", encoding=selected_encoding)
+    f = codecs.open(file_name, "r+", encoding=selected_encoding)
     char_count = 0
 
     alphabet = {}
-    char = f.read(1) # .lower()
-    chaine = char
-    while char:
-        for i in range(1, n_gram_size):
-            chaine += f.read(1)
+    previous_chaine = ""
+    full_file = f.read() # .lower()
+    f.close()
+    chaine = full_file[char_count:n_gram_size+char_count]
+    char_count += 1
+    while chaine:
         if chaine not in alphabet:
-            # alphabet.update({chaine:0})
             alphabet.update(
             {
                 chaine:
@@ -103,10 +107,10 @@ def n_gram(n_gram_size, file_name):
                 }
             })
         alphabet[chaine]["occurrences"] += 1
+        previous_previous_chaine = previous_chaine
+        previous_chaine = chaine
+        chaine = full_file[char_count:n_gram_size+char_count]
         char_count += 1
-        char = f.read(1) # .lower()
-        chaine = char
-    f.close()
     return alphabet
 
 def sort_digram_by_weight(all_ngrams):
@@ -116,7 +120,6 @@ def sort_digram_by_weight(all_ngrams):
     dict_to_list = [x for x in all_ngrams.iteritems()]
     dict_to_list.sort(key=lambda x: x[1]["weigth"])
     dict_to_list.reverse()
-    import pdb; pdb.set_trace()
     return dict_to_list
 
 def generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name):
