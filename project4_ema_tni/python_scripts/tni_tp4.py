@@ -1,14 +1,10 @@
 #!/usr/bin/env python2
 """
-TODO:
-    - code cleaning
+TNI script
 """
 
-import math
 import codecs
 import optparse
-import operator
-from decimal import Decimal
 
 
 # globals
@@ -107,8 +103,6 @@ def n_gram(n_gram_size, file_name):
                 }
             })
         alphabet[chaine]["occurrences"] += 1
-        previous_previous_chaine = previous_chaine
-        previous_chaine = chaine
         chaine = full_file[char_count:n_gram_size+char_count]
         char_count += 1
     return alphabet
@@ -143,7 +137,6 @@ def add_ngram_weigth(all_ngrams):
     return all_ngrams
 
 def run(ngram_max_size, file_name, output_file):
-    sorted_alphabets = []
     uniq_char_list = n_gram(1, file_name)
     all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name)
     all_ngrams = add_ngram_weigth(all_ngrams)
