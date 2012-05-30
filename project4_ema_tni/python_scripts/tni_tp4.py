@@ -1,4 +1,9 @@
 #!/usr/bin/env python2
+"""
+TODO:
+    - code cleaning
+"""
+
 import math
 import codecs
 import optparse
@@ -10,7 +15,7 @@ from decimal import Decimal
 # selected_encoding = "utf-8"
 selected_encoding="iso-8859-1"
 
-def decoding_text(encoded_char_map, n_gram_max_size, output_file, decoded_file):
+def decoding_text(encoded_char_map, ngram_max_size, output_file, decoded_file):
     f = codecs.open(output_file, "r", encoding=selected_encoding)
     f2 = codecs.open(decoded_file, "w", encoding=selected_encoding)
     char = f.read(1)
@@ -20,20 +25,19 @@ def decoding_text(encoded_char_map, n_gram_max_size, output_file, decoded_file):
         char = f.read(1)
     f2.close()
 
-def encoding_text(encoded_char_map, file_name, n_gram_max_size, output_file):
+def encoding_text(encoded_char_map, file_name, ngram_max_size, output_file):
     f = codecs.open(file_name, "r", encoding=selected_encoding)
     f2 = codecs.open(output_file, "w", encoding=selected_encoding)
-    char_control = f.read(n_gram_max_size)
-    # import ipdb; ipdb.set_trace()
+    char_control = f.read(ngram_max_size)
     while char_control:
         compteur = 0
         if char_control in encoded_char_map:
             tampon = encoded_char_map.index(char_control)
             encoding_tampon = unichr(tampon)
             f2.write(encoding_tampon)
-            char_control = f.read(n_gram_max_size)
+            char_control = f.read(ngram_max_size)
         else:
-             while compteur < n_gram_max_size:
+             while compteur < ngram_max_size:
                  compteur += 1
                  tmp_char = char_control[:compteur]
                  if tmp_char in encoded_char_map:
@@ -41,10 +45,10 @@ def encoding_text(encoded_char_map, file_name, n_gram_max_size, output_file):
                      encoding_tampon = unichr(tampon)
                      f2.write(encoding_tampon)
                      char_control = char_control[compteur:] + f.read(compteur)
-                     compteur = n_gram_max_size
+                     compteur = ngram_max_size
                  else:
-                     char_control = char_control[compteur:] + f.read(n_gram_max_size-compteur)
-                     compteur = n_gram_max_size
+                     char_control = char_control[compteur:] + f.read(ngram_max_size-compteur)
+                     compteur = ngram_max_size
     f.close()
     f2.close()
 
@@ -61,15 +65,20 @@ def create_encoded_char_map(uniq_char_list, n_gram_to_encode):
         couple = n_gram_to_encode[count]
         char = couple[0]
         count += 1
+    import pdb; pdb.set_trace()
     return encoded_char_map
 
 def n_gram(n_gram_size, file_name):
     """
+    Count ngrams occurrences.
     alphabet
     {
-        "a": {"occurences":0, "weigth":0}
-        "b": {"occurences":0, "weigth":0}
+        "a": {"occurrences":0, "weigth":0}
+        "b": {"occurrences":0, "weigth":0}
     }
+    occurrences: number of ngrams counted
+    weigth: the weigth given to this ngram computed from the following formula:
+        weigth = ngram-size * occurrences
     """
     # prob n-gram
     print("=================================" + str(n_gram_size) + "-grammes=================================")
@@ -84,51 +93,69 @@ def n_gram(n_gram_size, file_name):
         for i in range(1, n_gram_size):
             chaine += f.read(1)
         if chaine not in alphabet:
-            # alphabet.update({chaine:{"occurences":0, "weigth": 0}})
-            alphabet.update({chaine:0})
-        alphabet[chaine] += 1
+            # alphabet.update({chaine:0})
+            alphabet.update(
+            {
+                chaine:
+                {
+                    "occurrences": 0,
+                    "weigth": 0,
+                }
+            })
+        alphabet[chaine]["occurrences"] += 1
         char_count += 1
         char = f.read(1) # .lower()
         chaine = char
     f.close()
+    return alphabet
 
+def sort_digram_by_weight(all_ngrams):
     """
-    probcharinit = 0
-    for lettre in alphabet:
-        nb_occ_char = alphabet[lettre]
-        prob_char = nb_occ_char / float(char_count)
-        print(str(lettre) + ":" + str(prob_char))
-        if prob_char > probcharinit :
-            moreLettre = lettre
-            probcharinit = prob_char
-    print(str(moreLettre) + " : " + str(probcharinit))
+    Sorts all_ngrams by weigth.
     """
-    sorted_alphabet = list(sorted(alphabet.iteritems(), key=operator.itemgetter(1)))
-    sorted_alphabet.reverse()
-    # for lettre in sorted_alphabet:
-    #     print(str(sorted_alphabet.index(lettre)))
-    return sorted_alphabet
+    dict_to_list = [x for x in all_ngrams.iteritems()]
+    dict_to_list.sort(key=lambda x: x[1]["weigth"])
+    dict_to_list.reverse()
+    import pdb; pdb.set_trace()
+    return dict_to_list
 
-def run(n_gram_max_size, file_name, output_file):
+def generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name):
+    """
+    Put all ngrams from 2 to ngram_max_size in the same object
+    to be later sorted (with sort_digram_by_weight).
+    """
+    all_ngrams = {}
+    for i in range(2, ngram_max_size+1):
+        ngrams = n_gram(i, file_name)
+        all_ngrams.update(ngrams)
+    return all_ngrams
+
+def add_ngram_weigth(all_ngrams):
+    """
+    weigth: the weigth given to this ngram computed from the following formula:
+        weigth = ngram-size * occurrences
+    """
+    for ngram in all_ngrams:
+        all_ngrams[ngram]["weigth"] = len(ngram) * all_ngrams[ngram]["occurrences"]
+    return all_ngrams
+
+def run(ngram_max_size, file_name, output_file):
     sorted_alphabets = []
     uniq_char_list = n_gram(1, file_name)
-    sorted_digrams = n_gram(n_gram_max_size, file_name)
-    encoded_char_map = []
-    encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_digrams)
-    encoding_text(encoded_char_map, file_name, n_gram_max_size, output_file)
-    decoding_text(encoded_char_map, n_gram_max_size, output_file, decoded_file)
-    """
-    for i in range(1, n_gram_max_size+1):
-        sorted_alphabet = n_gram(i, file_name)
-        sorted_alphabets.append(sorted_alphabet)
-    """
+    all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name)
+    all_ngrams = add_ngram_weigth(all_ngrams)
+    sorted_ngrams = sort_digram_by_weight(all_ngrams)
+
+    encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_ngrams)
+    encoding_text(encoded_char_map, file_name, ngram_max_size, output_file)
+    decoding_text(encoded_char_map, ngram_max_size, output_file, decoded_file)
 
 if __name__=="__main__":
     parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
     parser.add_option("-f", "--filename", dest="filename",
                       default="exemple1.txt", type="string",
                       help="file name to parse")
-    parser.add_option("-n", "--ngram", dest="n_gram_max_size",
+    parser.add_option("-n", "--ngram", dest="ngram_max_size",
                       default="4", type="int",
                       help="passing n-gram max size as param")
     parser.add_option("-o", "--output", dest="output",
@@ -140,8 +167,8 @@ if __name__=="__main__":
 
     (options, args) = parser.parse_args()
     file_name = options.filename
-    n_gram_max_size = options.n_gram_max_size
+    ngram_max_size = options.ngram_max_size
     output_file = options.output
     decoded_file = options.decoded
 
-    run(n_gram_max_size, file_name, output_file)
+    run(ngram_max_size, file_name, output_file)
