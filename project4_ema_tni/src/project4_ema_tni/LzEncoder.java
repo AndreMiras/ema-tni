@@ -33,7 +33,6 @@ public class LzEncoder
     {
         this.text = text;
         createEncodedCharMap();
-        getEncodeText(); // in constructor for debugging purpose
     }
 
     public ArrayList<String> getEncodedCharMap()
@@ -89,7 +88,7 @@ public class LzEncoder
         }
     }
 
-    public ArrayList<Byte> getEncodeText()
+    public ArrayList<Byte> getEncodedText()
     {
         if (encodedText.isEmpty())
         {

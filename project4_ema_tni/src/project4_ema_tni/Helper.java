@@ -4,9 +4,7 @@
  */
 package project4_ema_tni;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -44,6 +42,14 @@ public class Helper
         }
     }
 
+    public static void writeBytesToFile(String path, byte[] bytes)
+            throws FileNotFoundException, IOException
+    {
+        FileOutputStream fos = new FileOutputStream(path);
+        fos.write(bytes);
+        fos.close();
+    }
+
     public static String readFile(String path) throws IOException
     {
         FileInputStream stream = new FileInputStream(new File(path));
@@ -60,5 +66,15 @@ public class Helper
         {
             stream.close();
         }
+    }
+
+    public static byte[] toPrimitiveBytes(Byte[] bytes)
+    {
+        byte[] primitiveBytes = new byte[bytes.length];
+        for(int i=0; i<bytes.length; i++)
+        {
+            primitiveBytes[i] = bytes[i];
+        }
+        return primitiveBytes;
     }
 }

@@ -86,7 +86,7 @@ public class LzEncoderTest
     {
         System.out.println("getEncodeText");
         LzEncoder lzEncoder = new LzEncoder(text);
-        ArrayList<Byte> result = lzEncoder.getEncodeText();
+        ArrayList<Byte> result = lzEncoder.getEncodedText();
 
         assertEquals(13543, result.size()); // 13527
         assertEquals(38, result.get(0).intValue());

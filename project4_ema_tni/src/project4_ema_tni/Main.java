@@ -5,14 +5,9 @@
 
 package project4_ema_tni;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.logging.Level;
@@ -67,5 +62,18 @@ public class Main
         System.out.println(textEntropy);
          */
         LzEncoder lzEncoder = new LzEncoder(text);
+        ArrayList<Byte> encodedText = lzEncoder.getEncodedText();
+        Byte[] toArray = encodedText.toArray(new Byte[encodedText.size()]);
+        byte[] bytes = Helper.toPrimitiveBytes(toArray);
+        try
+        {
+            Helper.writeBytesToFile("output.txt", bytes);
+        } catch (FileNotFoundException ex)
+        {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex)
+        {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }    
 }
