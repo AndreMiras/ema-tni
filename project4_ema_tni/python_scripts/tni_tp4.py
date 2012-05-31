@@ -92,6 +92,13 @@ def n_gram(n_gram_size, file_name):
     >>> ngrams = n_gram(4, file_name)
     >>> len(ngrams)
     6992
+
+    >>> ngrams["les "]["occurrences"]
+    134
+    >>> ngrams["e qu"]["occurrences"]
+    51
+    >>> ngrams["les "]["occurrences"]
+    134
     """
     # prob n-gram
     # print("=================================" + str(n_gram_size) + "-grammes=================================")
