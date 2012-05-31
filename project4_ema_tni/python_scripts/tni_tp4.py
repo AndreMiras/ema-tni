@@ -4,6 +4,7 @@ TNI script
 """
 
 import codecs
+import pickle
 import optparse
 
 
@@ -11,7 +12,7 @@ import optparse
 # selected_encoding = "utf-8"
 selected_encoding="iso-8859-1"
 
-def decoding_text(encoded_char_map, ngram_max_size, coded_full_file):
+def decoding_text(encoded_char_map, coded_full_file):
     count = 0
     char = coded_full_file[count:count+1]
     decoded_full_file = ""
@@ -22,10 +23,11 @@ def decoding_text(encoded_char_map, ngram_max_size, coded_full_file):
         char = coded_full_file[count:count+1]
     return decoded_full_file
 
-def encoding_text(encoded_char_map, full_file, ngram_max_size):
+
+def encoding_text(encoded_char_map, full_file):
     coded_full_file = ""
     char_count = 0
-    # char_control = f.read(ngram_max_size)
+    ngram_max_size = len(max(encoded_char_map))
     char_control = full_file[char_count:ngram_max_size+char_count]
     while char_control:
         if char_control in encoded_char_map:
@@ -126,7 +128,6 @@ def n_gram(n_gram_size, full_file):
     """
     # prob n-gram
     # print("=================================" + str(n_gram_size) + "-grammes=================================")
-    f = codecs.open(file_name, "r+", encoding=selected_encoding)
     char_count = 0
 
     alphabet = {}
@@ -176,49 +177,128 @@ def add_ngram_weigth(all_ngrams):
         all_ngrams[ngram]["weigth"] = len(ngram) * all_ngrams[ngram]["occurrences"]
     return all_ngrams
 
-def run(ngram_max_size, file_name, output_file):
-    """
-    >>> import hashlib
-    >>> input_file_name = "../exemple1.txt"
-    >>> output_file_name = "output.txt"
-    >>> decoded_file_name = "decoded1.txt"
-    >>> f = open(input_file_name)
-    >>> hashlib.sha1(f.read()).hexdigest()
-    '07a96a90b53a8ccaa589b6671d527d20b859469a'
-    >>> f.close()
-    >>> run(4, input_file_name, output_file_name)
 
-    After running encoding and decoding the hash should be the same
-    >>> f = open(decoded_file_name)
-    >>> hashlib.sha1(f.read()).hexdigest()
-    '07a96a90b53a8ccaa589b6671d527d20b859469a'
-    >>> f.close()
-    """
-    f = codecs.open(file_name, "r", encoding=selected_encoding)
+def create_dictionary_from_file(ngram_max_size, file_path):
+    f = open(file_path)
     full_file = f.read()
     f.close()
+    return create_dictionary(ngram_max_size, full_file)
+
+
+def create_dictionary(ngram_max_size, full_file):
     uniq_char_list = n_gram(1, full_file)
     all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, full_file)
     all_ngrams = add_ngram_weigth(all_ngrams)
     sorted_ngrams = sort_digram_by_weight(all_ngrams)
 
-    encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_ngrams)
-    coded_full_file = encoding_text(encoded_char_map, file_name, ngram_max_size)
+    dictionary = create_encoded_char_map(uniq_char_list, sorted_ngrams)
+    return dictionary
+
+
+def dump_dictionary_to_file(dictionary, file_path):
+    f = codecs.open(file_path, "w")
+    pickle.dump(dictionary, f)
+    f.close()
+
+
+def load_dictionary_from_file(file_path):
+    f = codecs.open(file_path, "r")
+    dictionary = pickle.load(f)
+    f.close()
+    return dictionary
+
+
+def encode(full_file, dictionary):
+    """
+    >>> import hashlib
+    >>> input_file_name = "../exemple1.txt"
+    >>> output_file_name = "output.txt"
+    >>> decoded_file_name = "decoded1.txt"
+    >>> selected_encoding="iso-8859-1"
+    >>> ngram_max_size = 4
+    >>> # f = codecs.open(input_file_name, "r", encoding=selected_encoding)
+    >>> f = codecs.open(input_file_name, "r")
+    >>> full_file = f.read()
+    >>> f.close()
+    >>> # hashlib.sha1(full_file.encode(selected_encoding)).hexdigest()
+    >>> hashlib.sha1(full_file).hexdigest()
+    '07a96a90b53a8ccaa589b6671d527d20b859469a'
+    >>> dictionary = create_dictionary(ngram_max_size, full_file)
+    >>> coded_full_file = encode(full_file, dictionary)
+    >>> decoded_full_file = decode(coded_full_file, dictionary)
+
+    After running encoding and decoding the hash should be the same
+    >>> # hashlib.sha1(decoded_full_file.encode(selected_encoding)).hexdigest()
+    >>> hashlib.sha1(decoded_full_file).hexdigest()
+    '07a96a90b53a8ccaa589b6671d527d20b859469a'
+    """
+    coded_full_file = encoding_text(dictionary, full_file)
+    return coded_full_file
+
+
+def encode_to_file(file_name, dictionary_file_path, output_file):
+    f = codecs.open(file_name, "r")
+    full_file = f.read()
+    f.close()
+
+    dictionary = load_dictionary_from_file(dictionary_file_path)
+
+    coded_full_file = encode(full_file, dictionary)
     f4 = codecs.open(output_file, "w", encoding=selected_encoding)
     f4.write(coded_full_file)
+    f4.close()
 
-    f2 = codecs.open(output_file, "r", encoding=selected_encoding)
-    coded_full_file = f2.read()
-    f2.close()
 
-    decoded_full_file = decoding_text(encoded_char_map, ngram_max_size, coded_full_file)
-    f3 = codecs.open(decoded_file, "w", encoding=selected_encoding)
+def decode(coded_full_file, dictionary):
+    decoded_full_file = decoding_text(dictionary, coded_full_file)
+    return decoded_full_file
+
+
+def decode_to_file(encoded_input_file_path, dictionary_input_file_path, decoded_output_file):
+    dictionary = load_dictionary_from_file(dictionary_input_file_path)
+    f = codecs.open(encoded_input_file_path, "r")
+    coded_full_file = f.read()
+    f.close()
+    decoded_full_file = decode(coded_full_file, dictionary)
+    f3 = codecs.open(decoded_output_file, "w")
     f3.write(decoded_full_file)
     f3.close()
+
+
+def run(ngram_max_size, file_name, encoded_output_file, decoded_output_file):
+    """
+    >>> import hashlib
+    >>> input_file_name = "../exemple1.txt"
+    >>> output_file_name = "output.txt"
+    >>> decoded_file_name = "decoded1.txt"
+    >>> selected_encoding="iso-8859-1"
+    >>> f = codecs.open(input_file_name, "r")
+    >>> full_file = f.read()
+    >>> f.close()
+    >>> hashlib.sha1(full_file).hexdigest()
+    '07a96a90b53a8ccaa589b6671d527d20b859469a'
+    >>> run(4, input_file_name, output_file_name, decoded_file_name)
+
+    After running encoding and decoding the hash should be the same
+    >>> f = codecs.open(decoded_file_name, "r")
+    >>> decoded_full_file = f.read()
+    >>> f.close()
+    >>> hashlib.sha1(decoded_full_file).hexdigest()
+    '07a96a90b53a8ccaa589b6671d527d20b859469a'
+    """
+    dictionary = create_dictionary_from_file(ngram_max_size, file_name)
+    dictionary_file_path = encoded_output_file + ".dic"
+    dump_dictionary_to_file(dictionary, dictionary_file_path)
+    encode_to_file(file_name, dictionary_file_path, encoded_output_file)
+    # now lets decode what we've encoded
+    encoded_input_file_path = encoded_output_file
+    decode_to_file(encoded_input_file_path, dictionary_file_path, decoded_output_file)
+
 
 def _test():
     import doctest
     doctest.testmod()
+
 
 if __name__=="__main__":
     parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
@@ -240,9 +320,9 @@ if __name__=="__main__":
     (options, args) = parser.parse_args()
     file_name = options.filename
     ngram_max_size = options.ngram_max_size
-    output_file = options.output
+    encoded_output_file = options.output
     decoded_file = options.decoded
     if options.test:
         _test()
     else:
-        run(ngram_max_size, file_name, output_file)
+        run(ngram_max_size, file_name, encoded_output_file, decoded_file)
