@@ -11,15 +11,16 @@ import optparse
 # selected_encoding = "utf-8"
 selected_encoding="iso-8859-1"
 
-def decoding_text(encoded_char_map, ngram_max_size, output_file, decoded_file):
-    f = codecs.open(output_file, "r", encoding=selected_encoding)
-    f2 = codecs.open(decoded_file, "w", encoding=selected_encoding)
-    char = f.read(1)
+def decoding_text(encoded_char_map, ngram_max_size, coded_full_file):
+    count = 0
+    char = coded_full_file[count:count+1]
+    decoded_full_file = ""
     while char:
         tampon = encoded_char_map[ord(char)]
-        f2.write(tampon)
-        char = f.read(1)
-    f2.close()
+        decoded_full_file += tampon
+        count += 1
+        char = coded_full_file[count:count+1]
+    return decoded_full_file
 
 def encoding_text(encoded_char_map, file_name, ngram_max_size, output_file):
     f = codecs.open(file_name, "r", encoding=selected_encoding)
@@ -54,6 +55,28 @@ def create_encoded_char_map(uniq_char_list, n_gram_to_encode):
     """
     (u'e qu', {'occurrences': 17, 'weigth': 68})
     but should be occurrences 51
+
+    >>> input_file_name = "../exemple1.txt"
+    >>> output_file_name = "output.txt"
+    >>> decoded_file_name = "decoded1.txt"
+    >>> ngram_max_size = 4
+
+    >>> f = codecs.open(input_file_name, "r", encoding=selected_encoding)
+    >>> full_file = f.read()
+    >>> f.close()
+    >>> uniq_char_list = n_gram(1, full_file)
+    >>> all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, full_file)
+    >>> all_ngrams = add_ngram_weigth(all_ngrams)
+    >>> sorted_ngrams = sort_digram_by_weight(all_ngrams)
+
+    >>> encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_ngrams)
+    >>> len(encoded_char_map)
+    255
+    >>> encoded_char_map[:10]
+    [u'\\x80', u'\\x89', u'\\n', u'C', u'\\x93', u'\\xc2', u'\\x99', u'R', u'\\xae', u'!']
+
+    >>> encoded_char_map[245:]
+    [u'\\x80\\x99a', u'ais', u' fa', u'ma', u'ui', u'omm', u'ont ', u'l ', u' qui', u'out']
     """
     encoded_char_map = []
     for couple in uniq_char_list:
@@ -69,7 +92,7 @@ def create_encoded_char_map(uniq_char_list, n_gram_to_encode):
         count += 1
     return encoded_char_map
 
-def n_gram(n_gram_size, file_name):
+def n_gram(n_gram_size, full_file):
     """
     Count ngrams occurrences.
     alphabet
@@ -81,7 +104,12 @@ def n_gram(n_gram_size, file_name):
     weigth: the weigth given to this ngram computed from the following formula:
         weigth = ngram-size * occurrences
 
-    >>> ngrams = n_gram(3, file_name)
+    >>> input_file_name = "../exemple1.txt"
+    >>> f = codecs.open(input_file_name, "r", encoding=selected_encoding)
+    >>> full_file = f.read()
+    >>> f.close()
+
+    >>> ngrams = n_gram(3, full_file)
     >>> len(ngrams)
     2893
     >>> "foo" in ngrams
@@ -89,7 +117,7 @@ def n_gram(n_gram_size, file_name):
     >>> ngrams["bar"]["occurrences"]
     3
 
-    >>> ngrams = n_gram(4, file_name)
+    >>> ngrams = n_gram(4, full_file)
     >>> len(ngrams)
     6992
 
@@ -106,9 +134,6 @@ def n_gram(n_gram_size, file_name):
     char_count = 0
 
     alphabet = {}
-    previous_chaine = ""
-    full_file = f.read() # .lower()
-    f.close()
     chaine = full_file[char_count:n_gram_size+char_count]
     char_count += 1
     while chaine:
@@ -135,14 +160,14 @@ def sort_digram_by_weight(all_ngrams):
     dict_to_list.reverse()
     return dict_to_list
 
-def generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name):
+def generate_all_ngrams_to_ngram_max_size(ngram_max_size, full_file):
     """
     Put all ngrams from 2 to ngram_max_size in the same object
     to be later sorted (with sort_digram_by_weight).
     """
     all_ngrams = {}
     for i in range(2, ngram_max_size+1):
-        ngrams = n_gram(i, file_name)
+        ngrams = n_gram(i, full_file)
         all_ngrams.update(ngrams)
     return all_ngrams
 
@@ -173,14 +198,24 @@ def run(ngram_max_size, file_name, output_file):
     '07a96a90b53a8ccaa589b6671d527d20b859469a'
     >>> f.close()
     """
-    uniq_char_list = n_gram(1, file_name)
-    all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name)
+    f = codecs.open(file_name, "r", encoding=selected_encoding)
+    full_file = f.read()
+    f.close()
+    uniq_char_list = n_gram(1, full_file)
+    all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, full_file)
     all_ngrams = add_ngram_weigth(all_ngrams)
     sorted_ngrams = sort_digram_by_weight(all_ngrams)
 
     encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_ngrams)
     encoding_text(encoded_char_map, file_name, ngram_max_size, output_file)
-    decoding_text(encoded_char_map, ngram_max_size, output_file, decoded_file)
+    f2 = codecs.open(output_file, "r", encoding=selected_encoding)
+    coded_full_file = f2.read()
+    f2.close()
+
+    decoded_full_file = decoding_text(encoded_char_map, ngram_max_size, coded_full_file)
+    f3 = codecs.open(decoded_file, "w", encoding=selected_encoding)
+    f3.write(decoded_full_file)
+    f3.close()
 
 def _test():
     import doctest
