@@ -22,11 +22,8 @@ def decoding_text(encoded_char_map, ngram_max_size, coded_full_file):
         char = coded_full_file[count:count+1]
     return decoded_full_file
 
-def encoding_text(encoded_char_map, file_name, ngram_max_size, output_file):
-    f = codecs.open(file_name, "r", encoding=selected_encoding)
-    f2 = codecs.open(output_file, "w", encoding=selected_encoding)
-    full_file = f.read()
-    f.close()
+def encoding_text(encoded_char_map, full_file, ngram_max_size):
+    coded_full_file = ""
     char_count = 0
     # char_control = f.read(ngram_max_size)
     char_control = full_file[char_count:ngram_max_size+char_count]
@@ -34,7 +31,7 @@ def encoding_text(encoded_char_map, file_name, ngram_max_size, output_file):
         if char_control in encoded_char_map:
             tampon = encoded_char_map.index(char_control)
             encoding_tampon = unichr(tampon)
-            f2.write(encoding_tampon)
+            coded_full_file += encoding_tampon
             char_count += ngram_max_size
             char_control = full_file[char_count:ngram_max_size+char_count]
         else:
@@ -45,11 +42,10 @@ def encoding_text(encoded_char_map, file_name, ngram_max_size, output_file):
                  compter -= 1
              tampon = encoded_char_map.index(tmp_char)
              encoding_tampon = unichr(tampon)
-             f2.write(encoding_tampon) # FIXME
+             coded_full_file += encoding_tampon
              char_count += len(tmp_char)
              char_control = full_file[char_count:char_count+ngram_max_size]
-
-    f2.close()
+    return coded_full_file
 
 def create_encoded_char_map(uniq_char_list, n_gram_to_encode):
     """
@@ -207,7 +203,10 @@ def run(ngram_max_size, file_name, output_file):
     sorted_ngrams = sort_digram_by_weight(all_ngrams)
 
     encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_ngrams)
-    encoding_text(encoded_char_map, file_name, ngram_max_size, output_file)
+    coded_full_file = encoding_text(encoded_char_map, file_name, ngram_max_size)
+    f4 = codecs.open(output_file, "w", encoding=selected_encoding)
+    f4.write(coded_full_file)
+
     f2 = codecs.open(output_file, "r", encoding=selected_encoding)
     coded_full_file = f2.read()
     f2.close()
