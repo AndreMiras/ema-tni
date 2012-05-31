@@ -80,9 +80,21 @@ def n_gram(n_gram_size, file_name):
     occurrences: number of ngrams counted
     weigth: the weigth given to this ngram computed from the following formula:
         weigth = ngram-size * occurrences
+
+    >>> ngrams = n_gram(3, file_name)
+    >>> len(ngrams)
+    2893
+    >>> "foo" in ngrams
+    False
+    >>> ngrams["bar"]["occurrences"]
+    3
+
+    >>> ngrams = n_gram(4, file_name)
+    >>> len(ngrams)
+    6992
     """
     # prob n-gram
-    print("=================================" + str(n_gram_size) + "-grammes=================================")
+    # print("=================================" + str(n_gram_size) + "-grammes=================================")
     f = codecs.open(file_name, "r+", encoding=selected_encoding)
     char_count = 0
 
@@ -137,6 +149,23 @@ def add_ngram_weigth(all_ngrams):
     return all_ngrams
 
 def run(ngram_max_size, file_name, output_file):
+    """
+    >>> import hashlib
+    >>> input_file_name = "../exemple1.txt"
+    >>> output_file_name = "output.txt"
+    >>> decoded_file_name = "decoded1.txt"
+    >>> f = open(input_file_name)
+    >>> hashlib.sha1(f.read()).hexdigest()
+    '07a96a90b53a8ccaa589b6671d527d20b859469a'
+    >>> f.close()
+    >>> run(4, input_file_name, output_file_name)
+
+    After running encoding and decoding the hash should be the same
+    >>> f = open(decoded_file_name)
+    >>> hashlib.sha1(f.read()).hexdigest()
+    '07a96a90b53a8ccaa589b6671d527d20b859469a'
+    >>> f.close()
+    """
     uniq_char_list = n_gram(1, file_name)
     all_ngrams = generate_all_ngrams_to_ngram_max_size(ngram_max_size, file_name)
     all_ngrams = add_ngram_weigth(all_ngrams)
@@ -145,6 +174,10 @@ def run(ngram_max_size, file_name, output_file):
     encoded_char_map = create_encoded_char_map(uniq_char_list, sorted_ngrams)
     encoding_text(encoded_char_map, file_name, ngram_max_size, output_file)
     decoding_text(encoded_char_map, ngram_max_size, output_file, decoded_file)
+
+def _test():
+    import doctest
+    doctest.testmod()
 
 if __name__=="__main__":
     parser = optparse.OptionParser("usage: %prog --filename exemple1.txt")
@@ -160,11 +193,15 @@ if __name__=="__main__":
     parser.add_option("-d", "--decoded", dest="decoded",
                       default="decoded1.txt", type="string",
                       help="decoded file name")
+    parser.add_option("-t", action="store_true", dest="test",
+                      help="run tests")
 
     (options, args) = parser.parse_args()
     file_name = options.filename
     ngram_max_size = options.ngram_max_size
     output_file = options.output
     decoded_file = options.decoded
-
-    run(ngram_max_size, file_name, output_file)
+    if options.test:
+        _test()
+    else:
+        run(ngram_max_size, file_name, output_file)
